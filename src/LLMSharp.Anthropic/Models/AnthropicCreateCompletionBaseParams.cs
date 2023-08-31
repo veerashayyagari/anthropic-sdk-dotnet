@@ -4,15 +4,17 @@ using System.Text.Json.Serialization;
 
 namespace LLMSharp.Anthropic.Models
 {
-    public class AnthropicCreateCompletionParams
+    public abstract class AnthropicCreateCompletionBaseParams
     {
         /// <summary>
         /// The maximum number of tokens to generate before stopping.
         /// Note: that anthropic models may stop _before_ reaching this maximum. This parameter
-        /// only specifies the absolute maximum number of tokens to generate.                
+        /// only specifies the absolute maximum number of tokens to generate. 
+        /// 
+        /// Default : 2048 tokens
         /// </summary>
         [JsonPropertyName("max_tokens_to_sample")]
-        public int MaxTokensToSample { get; set; }
+        public int MaxTokensToSample { get; set; } = 2048;
 
         /// <summary>
         /// The model that will complete your prompt.
@@ -36,12 +38,12 @@ namespace LLMSharp.Anthropic.Models
         /// var userQuestion = r"Why is the sky blue?";
         /// var prompt = $"\n\nHuman: {userQuestion}\n\nAssistant:";
         /// ```
-        /// 
+        /// Default : "\n\nHuman:Hello,Claude. \n\nAssistant:"
         /// See [comments on prompts](https://docs.anthropic.com/claude/docs/introduction-to-prompt-design)
         /// for more context.
         /// </summary>
         [JsonPropertyName("prompt")]
-        public string? Prompt { get; set; }
+        public string Prompt { get; set; } = $"{Constants.HUMAN_PROMPT}Hello, Claude. {Constants.AI_PROMPT}";
 
         /// <summary>
         /// Sequences that will cause the model to stop generating completion text.
@@ -54,12 +56,6 @@ namespace LLMSharp.Anthropic.Models
         public IEnumerable<string>? StopSequences { get; set; }
 
         /// <summary>
-        /// Whether to incrementally stream the response using server-sent events.
-        /// </summary>
-        [JsonPropertyName("stream")]
-        public bool Stream { get; set; } = false;
-
-        /// <summary>
         /// Amount of randomness injected into the response.
         /// 
         /// Defaults to 1.
@@ -67,7 +63,7 @@ namespace LLMSharp.Anthropic.Models
         /// and closer to 1 for creative and generative tasks.
         /// </summary>
         [JsonPropertyName("temperature")]
-        public float Temperature { get; set; } = 1;
+        public float? Temperature { get; set; } = 1;
 
         /// <summary>
         /// Only sample from the top K options for each subsequent token.
@@ -76,7 +72,7 @@ namespace LLMSharp.Anthropic.Models
         /// [Learn more technical details here](https://towardsdatascience.com/how-to-sample-from-language-models-682bceb97277)
         /// </summary>
         [JsonPropertyName("top_k")]
-        public int TopK { get; set; }
+        public int? TopK { get; set; }
 
         /// <summary>
         /// Use nucleus sampling.
@@ -86,7 +82,7 @@ namespace LLMSharp.Anthropic.Models
         /// Temperature or TopP , but not both
         /// </summary>
         [JsonPropertyName("top_p")]
-        public float TopP { get; set; }
+        public float? TopP { get; set; }
 
         /// <summary>
         /// An object describing metadata about the request.

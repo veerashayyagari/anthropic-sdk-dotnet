@@ -44,14 +44,15 @@ namespace LLMSharp.Anthropic
         /// Default headers to include with every request to the API.
         /// 
         /// These can be removed in individual requests by explicitly setting the
-        /// header to `undefined` or `null` in request options.
+        /// header to 'null' in RequestOptions.
         /// </summary>
         public HttpHeaders? DefaultHeaders { get; set; }
 
         /// <summary>
         /// Authentication Bearer Token
-        /// Set either ApiKey or AuthToken property but not both        
+        /// Set either ApiKey or AuthToken property but not both
+        /// Default : ANTHROPIC_AUTH_TOKEN environment variable
         /// </summary>
-        public string? AuthToken { get; set; }
+        public string? AuthToken { get; set; } = System.Environment.GetEnvironmentVariable("ANTHROPIC_AUTH_TOKEN");
     }
 }
