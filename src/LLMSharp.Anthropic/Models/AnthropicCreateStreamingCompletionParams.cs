@@ -2,7 +2,7 @@
 
 namespace LLMSharp.Anthropic.Models
 {
-    public class AnthropicCreateStreamingCompletionParams
+    public class AnthropicCreateStreamingCompletionParams: AnthropicCreateCompletionBaseParams
     {
         /// <summary>
         /// Whether to incrementally stream the response using server-sent events.

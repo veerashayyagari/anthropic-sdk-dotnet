@@ -17,9 +17,20 @@ namespace LLMSharp.Anthropic.Utils
             throw new Exception($"Unknown Language Model {val}");
         }
 
-        public override void Write(Utf8JsonWriter writer, AnthropicLanguageModel value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, AnthropicLanguageModel modelValue, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            if (modelValue == AnthropicLanguageModel.Claude2)
+            {
+                writer.WriteStringValue("claude-2");
+                return;
+            }
+            else if (modelValue == AnthropicLanguageModel.ClaudeInstant1)
+            {
+                writer.WriteStringValue("claude-instant-1");
+                return;
+            }
+
+            throw new Exception($"Unknown Language Model {modelValue}");
         }
     }
 }

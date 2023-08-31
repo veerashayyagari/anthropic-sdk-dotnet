@@ -5,6 +5,7 @@ using Polly;
 using Polly.Extensions.Http;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -21,6 +22,8 @@ namespace LLMSharp.Anthropic
         private readonly ILogger<AnthropicClient> _logger;
         private readonly IAsyncPolicy<HttpResponseMessage> _defaultRetryPolicy;
 
+        public AnthropicClient() : this(new ClientOptions()) { }
+
         public AnthropicClient(ClientOptions options) : this(options, null) { }
 
         public AnthropicClient(ClientOptions options, ILogger<AnthropicClient>? logger)
@@ -34,46 +37,85 @@ namespace LLMSharp.Anthropic
 
         public async Task<AnthropicCompletion?> GetCompletionsAsync(
             AnthropicCreateNonStreamingCompletionParams requestParams,
-            AnthropicRequestOptions? requestOptions,
+            AnthropicRequestOptions? requestOptions = null,
             CancellationToken cancellationToken = default)
         {
-            ValidateCompletionParams(requestParams);
-            
-            HttpRequestMessage message = new() { Content = requestParams.ToStringContent(), Method = HttpMethod.Post, RequestUri = new Uri(Constants.COMPLETIONS_ENDPOINT, UriKind.Relative)};            
-            var response = await this._defaultRetryPolicy.ExecuteAsync(
-                () => _httpClient.SendAsync(message, cancellationToken)).ConfigureAwait(false);
-
+            var response = await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);
             var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            if(response.StatusCode != HttpStatusCode.OK)
+            if (!response.IsSuccessStatusCode)
             {
                 throw new AnthropicClientException(response.StatusCode, response.Headers, responseBody);
             }
-            
-            return JsonSerializer.Deserialize<AnthropicCompletion>(responseBody);            
+
+            return JsonSerializer.Deserialize<AnthropicCompletion>(responseBody);
         }
 
-        public Task<IAsyncEnumerable<AnthropicCompletion>> GetStreamingCompletionsAsync(
-            AnthropicCreateStreamingCompletionParams requestParams,
-            AnthropicRequestOptions? requestOptions,
+        public async Task<HttpResponseMessage> GetRawCompletionsAsync(
+            AnthropicCreateNonStreamingCompletionParams requestParams,
+            AnthropicRequestOptions? requestOptions = null,
             CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IAsyncEnumerable<AnthropicCompletion?>> GetStreamingCompletionsAsync(
+            AnthropicCreateStreamingCompletionParams requestParams,
+            AnthropicRequestOptions? requestOptions = null,
+            CancellationToken cancellationToken = default)
+        {
+            var response = await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                throw new AnthropicClientException(response.StatusCode, response.Headers, responseBody);
+            }
+
+            Stream contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            return contentStream.ReadCompletionsFromSseStream();
+        }
+
+        public async Task<Stream> GetRawStreamingCompletionsAsync(
+            AnthropicCreateStreamingCompletionParams requestParams,
+            AnthropicRequestOptions? requestOptions = null,
+            CancellationToken cancellationToken = default)
+        {
+            var response = await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                throw new AnthropicClientException(response.StatusCode, response.Headers, responseBody);
+            }
+
+            return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        }
+
+        private async Task<HttpResponseMessage> GetRawChatCompletionsResponse<T>(T requestParams, AnthropicRequestOptions? requestOptions, CancellationToken cancellationToken) where T : AnthropicCreateCompletionBaseParams
+        {
+            ValidateCompletionParams(requestParams);
+            HttpRequestMessage message = new() { Content = requestParams.ToStringContent(), Method = HttpMethod.Post, RequestUri = new Uri(Constants.COMPLETIONS_ENDPOINT, UriKind.Relative) };
+
+            var response = await this._defaultRetryPolicy.ExecuteAsync(
+                () => (requestParams is AnthropicCreateNonStreamingCompletionParams) ?
+                _httpClient.SendAsync(message, cancellationToken) :
+                _httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
+            .ConfigureAwait(false);
+            return response;
         }
 
         private void ValidateCompletionParams(AnthropicCreateCompletionBaseParams completionParams)
         {
-            if(string.IsNullOrEmpty(completionParams.Prompt))
+            if (string.IsNullOrEmpty(completionParams.Prompt))
             {
                 throw new ArgumentNullException(nameof(completionParams.Prompt));
             }
 
-            if(completionParams.Temperature < 0 || completionParams.Temperature > 0)
+            if (completionParams.Temperature < 0 || completionParams.Temperature > 1)
             {
                 throw new ArgumentException($"{completionParams.Temperature}: Is invalid value for Temperature. Should be between 0 and 1.", nameof(completionParams.Temperature));
             }
 
-            if(completionParams.TopP.HasValue && (completionParams.TopP.Value < 0 || completionParams.TopP.Value > 1))
+            if (completionParams.TopP.HasValue && (completionParams.TopP.Value < 0 || completionParams.TopP.Value > 1))
             {
                 throw new ArgumentException($"{completionParams.TopP}: Is invalid value for TopP. Should be between 0 and 1.", nameof(completionParams.TopP));
             }

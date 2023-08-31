@@ -7,8 +7,7 @@ namespace LLMSharp.Anthropic.Utils
     {
         internal static HttpClient AddDefaultHeaders(this HttpClient client)
         {
-            client.DefaultRequestHeaders.Add("Accept", "application/json");
-            client.DefaultRequestHeaders.Add("Content-Type", "application/json");
+            client.DefaultRequestHeaders.Add("Accept", "application/json");            
             client.DefaultRequestHeaders.Add("User-Agent", Constants.LLMSHARP_USER_AGENT);
             client.DefaultRequestHeaders.Add("anthropic-version", Constants.ANTHROPIC_API_VERSION);
             return client;

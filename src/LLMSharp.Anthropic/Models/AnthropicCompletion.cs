@@ -8,7 +8,8 @@ namespace LLMSharp.Anthropic.Models
         /// <summary>
         /// The resulting completion up to and excluding the stop sequences.
         /// </summary>
-        public string Completion { get; set; } = string.Empty;
+        [JsonPropertyName("completion")]
+        public string? Completion { get; set; }
 
         /// <summary>
         /// The model that performed the completion
@@ -27,5 +28,11 @@ namespace LLMSharp.Anthropic.Models
         /// </summary>
         [JsonPropertyName("stop_reason")]
         public string? StopReason { get; set; }
+
+        /// <summary>
+        /// The stop sequence encountered when sampling is stopped.
+        /// </summary>
+        [JsonPropertyName("stop")]
+        public string? Stop { get; set; }
     }
 }
