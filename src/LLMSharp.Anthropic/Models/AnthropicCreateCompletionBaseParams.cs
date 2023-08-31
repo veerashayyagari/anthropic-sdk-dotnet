@@ -63,7 +63,7 @@ namespace LLMSharp.Anthropic.Models
         /// and closer to 1 for creative and generative tasks.
         /// </summary>
         [JsonPropertyName("temperature")]
-        public float? Temperature { get; set; } = 1;
+        public float Temperature { get; set; } = 1;
 
         /// <summary>
         /// Only sample from the top K options for each subsequent token.

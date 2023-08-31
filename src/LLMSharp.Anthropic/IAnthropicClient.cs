@@ -7,7 +7,7 @@ namespace LLMSharp.Anthropic
 {
     public interface IAnthropicClient
     {
-        Task<AnthropicCompletion> GetCompletionsAsync(
+        Task<AnthropicCompletion?> GetCompletionsAsync(
             AnthropicCreateNonStreamingCompletionParams requestParams,
             AnthropicRequestOptions? requestOptions,
             CancellationToken cancellationToken = default);

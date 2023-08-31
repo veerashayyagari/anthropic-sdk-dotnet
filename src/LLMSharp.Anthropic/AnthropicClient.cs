@@ -5,7 +5,11 @@ using Polly;
 using Polly.Extensions.Http;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,12 +32,25 @@ namespace LLMSharp.Anthropic
                 .WaitAndRetryAsync(options.MaxRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
 
-        public Task<AnthropicCompletion> GetCompletionsAsync(
+        public async Task<AnthropicCompletion?> GetCompletionsAsync(
             AnthropicCreateNonStreamingCompletionParams requestParams,
             AnthropicRequestOptions? requestOptions,
             CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ValidateCompletionParams(requestParams);
+            
+            HttpRequestMessage message = new() { Content = requestParams.ToStringContent(), Method = HttpMethod.Post, RequestUri = new Uri(Constants.COMPLETIONS_ENDPOINT, UriKind.Relative)};            
+            var response = await this._defaultRetryPolicy.ExecuteAsync(
+                () => _httpClient.SendAsync(message, cancellationToken)).ConfigureAwait(false);
+
+            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            if(response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new AnthropicClientException(response.StatusCode, response.Headers, responseBody);
+            }
+            
+            return JsonSerializer.Deserialize<AnthropicCompletion>(responseBody);            
         }
 
         public Task<IAsyncEnumerable<AnthropicCompletion>> GetStreamingCompletionsAsync(
@@ -42,6 +59,24 @@ namespace LLMSharp.Anthropic
             CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
+        }
+
+        private void ValidateCompletionParams(AnthropicCreateCompletionBaseParams completionParams)
+        {
+            if(string.IsNullOrEmpty(completionParams.Prompt))
+            {
+                throw new ArgumentNullException(nameof(completionParams.Prompt));
+            }
+
+            if(completionParams.Temperature < 0 || completionParams.Temperature > 0)
+            {
+                throw new ArgumentException($"{completionParams.Temperature}: Is invalid value for Temperature. Should be between 0 and 1.", nameof(completionParams.Temperature));
+            }
+
+            if(completionParams.TopP.HasValue && (completionParams.TopP.Value < 0 || completionParams.TopP.Value > 1))
+            {
+                throw new ArgumentException($"{completionParams.TopP}: Is invalid value for TopP. Should be between 0 and 1.", nameof(completionParams.TopP));
+            }
         }
 
         private HttpClient BuildClientFromOptions(ClientOptions options)
