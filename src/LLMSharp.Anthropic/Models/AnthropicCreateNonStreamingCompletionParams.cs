@@ -2,6 +2,9 @@
 
 namespace LLMSharp.Anthropic.Models
 {
+    /// <summary>
+    /// Class used for representing input params for NonStreaming ChatCompletions request
+    /// </summary>
     public class AnthropicCreateNonStreamingCompletionParams: AnthropicCreateCompletionBaseParams
     {
         /// <summary>

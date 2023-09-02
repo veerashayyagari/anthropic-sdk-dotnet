@@ -5,6 +5,9 @@ using System.Text.Json.Serialization;
 
 namespace LLMSharp.Anthropic.Utils
 {
+    /// <summary>
+    /// Custom Converter for Json Serialization/Deserialization of LanguageModel Enum
+    /// </summary>
     internal class LanguageModelJsonConverter : JsonConverter<AnthropicLanguageModel>
     {
         public override AnthropicLanguageModel Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

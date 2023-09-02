@@ -4,6 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace LLMSharp.Anthropic.Models
 {
+    /// <summary>
+    /// Base class with parameters required for both streaming and non-streaming completion requests to Anthropic API endpoint
+    /// </summary>
     public abstract class AnthropicCreateCompletionBaseParams
     {
         /// <summary>

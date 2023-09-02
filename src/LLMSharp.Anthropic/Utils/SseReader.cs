@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 namespace LLMSharp.Anthropic.Utils
 {
     // SSE specification: https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream
+
+    /// <summary>
+    /// SSE Reader implementation
+    /// </summary>
     internal sealed class SseReader : IDisposable
     {
         private readonly Stream _stream;

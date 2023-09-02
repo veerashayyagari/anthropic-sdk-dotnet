@@ -7,6 +7,10 @@ using System;
 namespace LLMSharp.Anthropic.Utils
 {
     // SSE specification: https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream
+
+    /// <summary>
+    /// SSE Line : is the single chunk read by the SSE reader
+    /// </summary>
     internal readonly struct SseLine
     {
         private readonly string _original;

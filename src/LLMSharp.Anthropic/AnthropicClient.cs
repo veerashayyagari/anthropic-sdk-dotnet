@@ -49,7 +49,7 @@ namespace LLMSharp.Anthropic
         }
 
         /// <summary>
-        /// Get non-streaming completions from Anthropic
+        /// Get non-streaming AnthropicCompletion object from Anthropic Completions API
         /// </summary>
         /// <param name="requestParams" cref="AnthropicCreateNonStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
         /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
@@ -73,7 +73,7 @@ namespace LLMSharp.Anthropic
         }
 
         /// <summary>
-        /// Get non-streaming raw httpresponse from Anthropic
+        /// Get non-streaming raw httpresponse from Anthropic Completions API
         /// </summary>
         /// <param name="requestParams" cref="AnthropicCreateNonStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
         /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
@@ -87,6 +87,14 @@ namespace LLMSharp.Anthropic
             return await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Get Streaming AnthropicCompletion object from Anthropic Completions API
+        /// </summary>
+        /// <param name="requestParams" cref="AnthropicCreateStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
+        /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        /// <returns>Stream of AnthropicCompletion objects</returns>
+        /// <exception cref="AnthropicClientException">Gets thrown on non success response code.</exception>
         public async Task<IAsyncEnumerable<AnthropicCompletion?>> GetStreamingCompletionsAsync(
             AnthropicCreateStreamingCompletionParams requestParams,
             AnthropicRequestOptions? requestOptions = null,
@@ -103,6 +111,14 @@ namespace LLMSharp.Anthropic
             return contentStream.ReadCompletionsFromSseStream();
         }
 
+        /// <summary>
+        /// Get the raw SSE stream from Anthorpic Completions API
+        /// </summary>
+        /// <param name="requestParams" cref="AnthropicCreateStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
+        /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        /// <returns>Server Sent Event Stream</returns>
+        /// <exception cref="AnthropicClientException">Gets thrown on non success response code.</exception>
         public async Task<Stream> GetRawStreamingCompletionsAsync(
             AnthropicCreateStreamingCompletionParams requestParams,
             AnthropicRequestOptions? requestOptions = null,
@@ -118,6 +134,15 @@ namespace LLMSharp.Anthropic
             return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Calls Anthropic Completions API endpoint and returns the HttpResponse
+        /// Code will take care of overriding values of timeout, retryPolicy and/or headers on a per request basis
+        /// </summary>
+        /// <typeparam name="T">type is either AnthropicCreateNonStreamingCompletionParams or AnthropicCreateStreamingCompletionParams</typeparam>
+        /// <param name="requestParams">Input parameters like prompt, temperature for generating completions</param>
+        /// <param name="requestOptions">Request specific overrides for ClientOptions</param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        /// <returns>HttpResponseMessage from the AnthropicCompletions API endpoint</returns>
         private async Task<HttpResponseMessage> GetRawChatCompletionsResponse<T>(T requestParams, AnthropicRequestOptions? requestOptions, CancellationToken cancellationToken) where T : AnthropicCreateCompletionBaseParams
         {
             ValidateCompletionParams(requestParams);
@@ -161,6 +186,12 @@ namespace LLMSharp.Anthropic
             return response;
         }
 
+        /// <summary>
+        /// Validate Completion Input params and throws an error if any parameters are invalid
+        /// </summary>
+        /// <param name="completionParams">Completion input parameters to validate</param>
+        /// <exception cref="ArgumentNullException">Gets thrown if prompt is null</exception>
+        /// <exception cref="ArgumentException">Gets thrown if temperature and/or topP are not with in the valid range</exception>
         private void ValidateCompletionParams(AnthropicCreateCompletionBaseParams completionParams)
         {
             if (string.IsNullOrEmpty(completionParams.Prompt))
@@ -179,6 +210,13 @@ namespace LLMSharp.Anthropic
             }
         }
 
+        /// <summary>
+        /// Create an httpclient using the provided clientOptions
+        /// </summary>
+        /// <param name="options">ClientOptions used to configure HttpClient</param>
+        /// <returns>HttpClient for calling Anthropic Completions RestAPI</returns>
+        /// <exception cref="ArgumentNullException">Gets thrown if BaseUrl is null</exception>
+        /// <exception cref="ArgumentException">Gets thrown if both ApiKey and AuthToken values are present or if BaseUrl is not valid</exception>
         private HttpClient BuildClientFromOptions(ClientOptions options)
         {
             if (string.IsNullOrEmpty(options.BaseUrl))

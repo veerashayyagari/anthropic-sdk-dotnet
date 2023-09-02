@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace LLMSharp.Anthropic.Models
 {
+    /// <summary>
+    /// AnthropicCompletion object returned by both Non-Streaming and Streaming Completions
+    /// </summary>
     public class AnthropicCompletion
     {
         /// <summary>

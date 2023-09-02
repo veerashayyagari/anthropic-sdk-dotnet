@@ -1,9 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+		<PackageId>LLMSharp.Anthropic</PackageId>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<AnalysisLevel>latest-recommended</AnalysisLevel>
+		<Authors>Veerash Ayyagari</Authors>
+		<Company>veerash-ayyagari</Company>
+		<PackageTags>anthropic, anthropic client, claude, dotnet, anthropic sdk</PackageTags>
+		<RepositoryUrl>https://github.com/veerashayyagari/anthropic-sdk-dotnet</RepositoryUrl>
+		<Description>Anthropic Claude BPE Tokenizer unofficial implementation</Description>
+		<Title>Anthropic Client SDK</Title>
+		<PackageProjectUrl>https://github.com/veerashayyagari/anthropic-sdk-dotnet</PackageProjectUrl>
+		<PackageLicenseExpression>Apache</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -15,6 +27,13 @@
 		</PackageReference>
 		<PackageReference Include="Polly" Version="7.2.4" />
 		<PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
 	</ItemGroup>
 
 </Project>
