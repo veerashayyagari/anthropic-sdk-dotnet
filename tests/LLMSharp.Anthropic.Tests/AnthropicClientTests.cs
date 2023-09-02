@@ -1,5 +1,4 @@
 using LLMSharp.Anthropic.Models;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace LLMSharp.Anthropic.Tests

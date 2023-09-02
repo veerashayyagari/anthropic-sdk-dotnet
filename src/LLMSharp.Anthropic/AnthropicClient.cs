@@ -6,26 +6,39 @@ using Polly.Extensions.Http;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace LLMSharp.Anthropic
 {
+    /// <summary>
+    /// Anthropic Completions Rest API client implementation
+    /// </summary>
     public class AnthropicClient : IAnthropicClient
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<AnthropicClient> _logger;
         private readonly IAsyncPolicy<HttpResponseMessage> _defaultRetryPolicy;
 
+        /// <summary>
+        /// Default constructor, with all the default client options
+        /// </summary>
         public AnthropicClient() : this(new ClientOptions()) { }
 
+        /// <summary>
+        /// Constructor with custom client options
+        /// </summary>
+        /// <param name="options" cref="ClientOptions">options for customizing anthropic client behavior</param>
         public AnthropicClient(ClientOptions options) : this(options, null) { }
 
+        /// <summary>
+        /// Constructor with custom client options and custom logger implementation
+        /// If logger is null, fallsback to default 'ConsoleLogger' implementation
+        /// </summary>
+        /// <param name="options" cref="ClientOptions">options for customizing anthropic client behavior</param>
+        /// <param name="logger">AnthropicClient logger implementation, Default: ConsoleLogger </param>
         public AnthropicClient(ClientOptions options, ILogger<AnthropicClient>? logger)
         {
             this._logger = logger ?? LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger<AnthropicClient>();
@@ -35,6 +48,14 @@ namespace LLMSharp.Anthropic
                 .WaitAndRetryAsync(options.MaxRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
 
+        /// <summary>
+        /// Get non-streaming completions from Anthropic
+        /// </summary>
+        /// <param name="requestParams" cref="AnthropicCreateNonStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
+        /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        /// <returns>AnthropicCompletion object with prompt response</returns>
+        /// <exception cref="AnthropicClientException">Gets thrown on non success response code.</exception>
         public async Task<AnthropicCompletion?> GetCompletionsAsync(
             AnthropicCreateNonStreamingCompletionParams requestParams,
             AnthropicRequestOptions? requestOptions = null,
@@ -51,6 +72,13 @@ namespace LLMSharp.Anthropic
             return JsonSerializer.Deserialize<AnthropicCompletion>(responseBody);
         }
 
+        /// <summary>
+        /// Get non-streaming raw httpresponse from Anthropic
+        /// </summary>
+        /// <param name="requestParams" cref="AnthropicCreateNonStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
+        /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        /// <returns>AnthropicCompletion HttpResponse with anthropic response payload and headers</returns>
         public async Task<HttpResponseMessage> GetRawCompletionsAsync(
             AnthropicCreateNonStreamingCompletionParams requestParams,
             AnthropicRequestOptions? requestOptions = null,
@@ -93,12 +121,42 @@ namespace LLMSharp.Anthropic
         private async Task<HttpResponseMessage> GetRawChatCompletionsResponse<T>(T requestParams, AnthropicRequestOptions? requestOptions, CancellationToken cancellationToken) where T : AnthropicCreateCompletionBaseParams
         {
             ValidateCompletionParams(requestParams);
+
+            IAsyncPolicy<HttpResponseMessage> retryPolicy = _defaultRetryPolicy;
+            if (requestOptions?.MaxRetries.HasValue == true)
+            {
+                retryPolicy = HttpPolicyExtensions
+                    .HandleTransientHttpError()
+                    .WaitAndRetryAsync(requestOptions.MaxRetries.Value, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+            }
+
+            CancellationToken requestCancellationToken = cancellationToken;
+            if (requestOptions?.Timeout.HasValue == true)
+            {
+                var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(requestOptions.Timeout.Value);
+                requestCancellationToken = cts.Token;
+            }
+
             HttpRequestMessage message = new() { Content = requestParams.ToStringContent(), Method = HttpMethod.Post, RequestUri = new Uri(Constants.COMPLETIONS_ENDPOINT, UriKind.Relative) };
 
-            var response = await this._defaultRetryPolicy.ExecuteAsync(
+            if (requestOptions?.RequestHeaders != null)
+            {
+                foreach (var header in requestOptions.RequestHeaders)
+                {
+                    if (message.Headers.Contains(header.Key))
+                    {
+                        message.Headers.Remove(header.Key);
+                    }
+
+                    message.Headers.Add(header.Key, header.Value);
+                }
+            }
+
+            var response = await retryPolicy.ExecuteAsync(
                 () => (requestParams is AnthropicCreateNonStreamingCompletionParams) ?
-                _httpClient.SendAsync(message, cancellationToken) :
-                _httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
+                _httpClient.SendAsync(message, requestCancellationToken) :
+                _httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, requestCancellationToken))
             .ConfigureAwait(false);
             return response;
         }
