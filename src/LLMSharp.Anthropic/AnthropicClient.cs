@@ -7,12 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace LLMSharp.Anthropic
 {
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
     /// <summary>
     /// Anthropic Completions Rest API client implementation
     /// </summary>
@@ -177,7 +179,11 @@ namespace LLMSharp.Anthropic
             }
 
             HttpRequestMessage message = new() { Content = requestParams.ToStringContent(), Method = HttpMethod.Post, RequestUri = new Uri(Constants.COMPLETIONS_ENDPOINT, UriKind.Relative) };
-            message.Version = new Version(2, 0);
+            if(Http2SupportAvailable())
+            {
+                _logger.LogInformation("Upgrading http request to use http/2.");
+                message.Version = new Version(2, 0);
+            }            
 
             if (requestOptions?.RequestHeaders != null)
             {
@@ -269,5 +275,21 @@ namespace LLMSharp.Anthropic
 
             throw new ArgumentException($"{options.BaseUrl}: is not a valid Uri");
         }
+
+        private static bool Http2SupportAvailable()
+        {
+            if (RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.InvariantCultureIgnoreCase)) return false;
+            if (RuntimeInformation.FrameworkDescription.StartsWith(".NET Native", StringComparison.InvariantCultureIgnoreCase)) return false;
+            if (RuntimeInformation.FrameworkDescription.StartsWith(".NET Core", StringComparison.InvariantCultureIgnoreCase))
+            {
+                var versionString = RuntimeInformation.FrameworkDescription.Split(' ')[2];
+                Version version = new Version(versionString);
+                return version.Major >= 3;
+            }
+
+            return true;
+        }
     }
+
+#pragma warning restore CA1848 // Use the LoggerMessage delegates
 }
