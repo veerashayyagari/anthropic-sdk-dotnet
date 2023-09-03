@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LLMSharp.Anthropic.Models;
+using System;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
@@ -12,7 +13,9 @@ namespace LLMSharp.Anthropic
     {
         public HttpStatusCode? HttpStatusCode { get; private set; }
 
-        public HttpHeaders? Headers { get; private set; }        
+        public HttpHeaders? Headers { get; private set; }    
+        
+        public AnthropicCompletionError? CompletionError { get; private set; }
 
         public AnthropicClientException(string message, Exception? innerException = null) : base(message, innerException) { }
 
@@ -25,6 +28,14 @@ namespace LLMSharp.Anthropic
         {
             HttpStatusCode = httpStatusCode;
             Headers = headers;
+        }
+
+        public AnthropicClientException(HttpStatusCode httpStatusCode, HttpHeaders? headers = null, AnthropicCompletionError? completionError = null)
+            : base(completionError?.Error?.ErrorMessage ?? string.Empty)
+        {
+            HttpStatusCode = httpStatusCode;
+            Headers = headers;
+            CompletionError = completionError;
         }
     }
 

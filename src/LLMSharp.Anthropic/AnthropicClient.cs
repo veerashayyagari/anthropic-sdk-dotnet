@@ -35,7 +35,7 @@ namespace LLMSharp.Anthropic
 
         /// <summary>
         /// Constructor with custom client options and custom logger implementation
-        /// If logger is null, fallsback to default 'ConsoleLogger' implementation
+        /// If logger is null, fallback to default 'ConsoleLogger' implementation
         /// </summary>
         /// <param name="options" cref="ClientOptions">options for customizing anthropic client behavior</param>
         /// <param name="logger">AnthropicClient logger implementation, Default: ConsoleLogger </param>
@@ -61,14 +61,14 @@ namespace LLMSharp.Anthropic
             AnthropicRequestOptions? requestOptions = null,
             CancellationToken cancellationToken = default)
         {
-            var response = await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);
-            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var response = await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);            
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new AnthropicClientException(response.StatusCode, response.Headers, responseBody);
+                await response.ProcessAsAnthropicClientException();
             }
 
+            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return JsonSerializer.Deserialize<AnthropicCompletion>(responseBody);
         }
 
@@ -103,8 +103,7 @@ namespace LLMSharp.Anthropic
             var response = await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                throw new AnthropicClientException(response.StatusCode, response.Headers, responseBody);
+                await response.ProcessAsAnthropicClientException();
             }
 
             Stream contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -112,14 +111,14 @@ namespace LLMSharp.Anthropic
         }
 
         /// <summary>
-        /// Get the raw SSE stream from Anthorpic Completions API
+        /// Get the SSE stream from Anthorpic Completions API
         /// </summary>
         /// <param name="requestParams" cref="AnthropicCreateStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
         /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
         /// <param name="cancellationToken">Request cancellation token</param>
         /// <returns>Server Sent Event Stream</returns>
         /// <exception cref="AnthropicClientException">Gets thrown on non success response code.</exception>
-        public async Task<Stream> GetRawStreamingCompletionsAsync(
+        public async Task<Stream> GetStreamingCompletionsAsStreamAsync(
             AnthropicCreateStreamingCompletionParams requestParams,
             AnthropicRequestOptions? requestOptions = null,
             CancellationToken cancellationToken = default)
@@ -127,11 +126,25 @@ namespace LLMSharp.Anthropic
             var response = await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                throw new AnthropicClientException(response.StatusCode, response.Headers, responseBody);
+                await response.ProcessAsAnthropicClientException();
             }
 
             return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get streaming raw httpresponse from Anthropic Completions API
+        /// </summary>
+        /// <param name="requestParams" cref="AnthropicCreateStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
+        /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        /// <returns>AnthropicCompletion HttpResponse with anthropic response payload and headers</returns>
+        public async Task<HttpResponseMessage> GetRawStreamingCompletionsAsync(
+            AnthropicCreateStreamingCompletionParams requestParams,
+            AnthropicRequestOptions? requestOptions = null,
+            CancellationToken cancellationToken = default)
+        {
+            return await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -164,6 +177,7 @@ namespace LLMSharp.Anthropic
             }
 
             HttpRequestMessage message = new() { Content = requestParams.ToStringContent(), Method = HttpMethod.Post, RequestUri = new Uri(Constants.COMPLETIONS_ENDPOINT, UriKind.Relative) };
+            message.Version = new Version(2, 0);
 
             if (requestOptions?.RequestHeaders != null)
             {
@@ -190,23 +204,28 @@ namespace LLMSharp.Anthropic
         /// Validate Completion Input params and throws an error if any parameters are invalid
         /// </summary>
         /// <param name="completionParams">Completion input parameters to validate</param>
-        /// <exception cref="ArgumentNullException">Gets thrown if prompt is null</exception>
-        /// <exception cref="ArgumentException">Gets thrown if temperature and/or topP are not with in the valid range</exception>
-        private void ValidateCompletionParams(AnthropicCreateCompletionBaseParams completionParams)
+        /// <exception cref="ArgumentNullException">Gets thrown if completionParams property is null</exception>
+        /// <exception cref="ArgumentException">Gets thrown if prompt is empty/null, temperature and/or topP are not with in the valid range</exception>
+        private static void ValidateCompletionParams(AnthropicCreateCompletionBaseParams completionParams)
         {
+            if(completionParams == null)
+            {
+                throw new ArgumentNullException(nameof(completionParams));
+            }
+
             if (string.IsNullOrEmpty(completionParams.Prompt))
             {
-                throw new ArgumentNullException(nameof(completionParams.Prompt));
+                throw new ArgumentException($"{nameof(completionParams.Prompt)} is null");
             }
 
             if (completionParams.Temperature < 0 || completionParams.Temperature > 1)
             {
-                throw new ArgumentException($"{completionParams.Temperature}: Is invalid value for Temperature. Should be between 0 and 1.", nameof(completionParams.Temperature));
+                throw new ArgumentException($"{completionParams.Temperature}: Is invalid value for Temperature. Should be between 0 and 1.");
             }
 
             if (completionParams.TopP.HasValue && (completionParams.TopP.Value < 0 || completionParams.TopP.Value > 1))
             {
-                throw new ArgumentException($"{completionParams.TopP}: Is invalid value for TopP. Should be between 0 and 1.", nameof(completionParams.TopP));
+                throw new ArgumentException($"{completionParams.TopP}: Is invalid value for TopP. Should be between 0 and 1.");
             }
         }
 
@@ -215,13 +234,18 @@ namespace LLMSharp.Anthropic
         /// </summary>
         /// <param name="options">ClientOptions used to configure HttpClient</param>
         /// <returns>HttpClient for calling Anthropic Completions RestAPI</returns>
-        /// <exception cref="ArgumentNullException">Gets thrown if BaseUrl is null</exception>
-        /// <exception cref="ArgumentException">Gets thrown if both ApiKey and AuthToken values are present or if BaseUrl is not valid</exception>
-        private HttpClient BuildClientFromOptions(ClientOptions options)
+        /// <exception cref="ArgumentNullException">Gets thrown if clientoptions parameter is null</exception>
+        /// <exception cref="ArgumentException">Gets thrown if either BaseUrl is null/invalid or both ApiKey and AuthToken values are present</exception>
+        private static HttpClient BuildClientFromOptions(ClientOptions options)
         {
+            if(options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             if (string.IsNullOrEmpty(options.BaseUrl))
             {
-                throw new ArgumentNullException(nameof(options.BaseUrl));
+                throw new ArgumentException($"{nameof(options.BaseUrl)} is null or empty");
             }
 
             if (!string.IsNullOrEmpty(options.ApiKey) && !string.IsNullOrEmpty(options.AuthToken))
@@ -234,8 +258,8 @@ namespace LLMSharp.Anthropic
                 var client = new HttpClient
                 {
                     BaseAddress = baseUri,
-                    Timeout = TimeSpan.FromMilliseconds(options.Timeout)
-                };
+                    Timeout = TimeSpan.FromMilliseconds(options.Timeout),                    
+                };                
 
                 return client
                     .AddDefaultHeaders()
@@ -243,7 +267,7 @@ namespace LLMSharp.Anthropic
                     .OverrideDefaultHeaders(options.DefaultHeaders);
             }
 
-            throw new ArgumentException($"{options.BaseUrl}: is not a valid Uri", nameof(options.BaseUrl));
+            throw new ArgumentException($"{options.BaseUrl}: is not a valid Uri");
         }
     }
 }

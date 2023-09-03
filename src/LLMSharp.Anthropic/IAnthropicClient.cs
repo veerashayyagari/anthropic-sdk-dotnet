@@ -51,14 +51,26 @@ namespace LLMSharp.Anthropic
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Get the raw SSE stream from Anthorpic Completions API
+        /// Get the SSE stream from Anthorpic Completions API
         /// </summary>
         /// <param name="requestParams" cref="AnthropicCreateStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
         /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
         /// <param name="cancellationToken">Request cancellation token</param>
         /// <returns>Server Sent Event Stream</returns>
         /// <exception cref="AnthropicClientException">Gets thrown on non success response code.</exception>
-        Task<Stream> GetRawStreamingCompletionsAsync(
+        Task<Stream> GetStreamingCompletionsAsStreamAsync(
+            AnthropicCreateStreamingCompletionParams requestParams,
+            AnthropicRequestOptions? requestOptions = null,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get the raw http streaming response from Anthorpic Completions API
+        /// </summary>
+        /// <param name="requestParams" cref="AnthropicCreateStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
+        /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        /// <returns>Raw HttpResponseMessage</returns>        
+        Task<HttpResponseMessage> GetRawStreamingCompletionsAsync(
             AnthropicCreateStreamingCompletionParams requestParams,
             AnthropicRequestOptions? requestOptions = null,
             CancellationToken cancellationToken = default);

@@ -8,7 +8,7 @@ namespace LLMSharp.Anthropic.Utils
     /// <summary>
     /// Custom Converter for Json Serialization/Deserialization of LanguageModel Enum
     /// </summary>
-    internal class LanguageModelJsonConverter : JsonConverter<AnthropicLanguageModel>
+    internal sealed class LanguageModelJsonConverter : JsonConverter<AnthropicLanguageModel>
     {
         public override AnthropicLanguageModel Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -17,7 +17,7 @@ namespace LLMSharp.Anthropic.Utils
                 return AnthropicLanguageModel.Claude2;
             if (val == "claude-instant-1")
                 return AnthropicLanguageModel.ClaudeInstant1;
-            throw new Exception($"Unknown Language Model {val}");
+            throw new InvalidOperationException($"Unknown Language Model {val}");
         }
 
         public override void Write(Utf8JsonWriter writer, AnthropicLanguageModel modelValue, JsonSerializerOptions options)
@@ -33,7 +33,7 @@ namespace LLMSharp.Anthropic.Utils
                 return;
             }
 
-            throw new Exception($"Unknown Language Model {modelValue}");
+            throw new InvalidOperationException($"Unknown Language Model {modelValue}");
         }
     }
 }

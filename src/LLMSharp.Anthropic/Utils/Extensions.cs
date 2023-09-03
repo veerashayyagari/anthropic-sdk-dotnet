@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace LLMSharp.Anthropic.Utils
 {
@@ -63,6 +64,25 @@ namespace LLMSharp.Anthropic.Utils
                 AnthropicCompletion? chatCompletionsFromSse = JsonSerializer.Deserialize<AnthropicCompletion>(sseMessageJson);
                 yield return chatCompletionsFromSse;
             }
+        }
+
+        /// <summary>
+        /// Processes HttpResponseMessage into an Anthropic Client Exception
+        /// Checks if response body can be deserialized into AnthropicCompletionError payload, and throws appropriate exception
+        /// </summary>
+        /// <param name="response">HttpResponseMessage with an error response code</param>
+        /// <returns></returns>
+        /// <exception cref="AnthropicClientException"></exception>
+        internal static async Task ProcessAsAnthropicClientException(this HttpResponseMessage response)
+        {
+            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var completionError = JsonSerializer.Deserialize<AnthropicCompletionError>(responseBody);
+            if (completionError != null)
+            {
+                throw new AnthropicClientException(response.StatusCode, response.Headers, completionError);
+            }
+
+            throw new AnthropicClientException(response.StatusCode, response.Headers, responseBody);
         }
     }
 }

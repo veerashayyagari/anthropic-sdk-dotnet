@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Collections.Generic;
 
 namespace LLMSharp.Anthropic.Models
 {
@@ -11,7 +11,7 @@ namespace LLMSharp.Anthropic.Models
         /// Any custom headers specific to the request,
         /// Request headers will take precedence over DefaultHeaders in ClientOptions
         /// </summary>
-        public HttpHeaders? RequestHeaders { get; set; }
+        public IDictionary<string, IEnumerable<string>>? RequestHeaders { get; set; }
 
         /// <summary>
         /// The maximum number of times that the client will retry a request in case of a
