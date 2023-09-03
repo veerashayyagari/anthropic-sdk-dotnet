@@ -11,10 +11,10 @@
 		<Company>veerash-ayyagari</Company>
 		<PackageTags>anthropic, anthropic client, claude, dotnet, anthropic sdk</PackageTags>
 		<RepositoryUrl>https://github.com/veerashayyagari/anthropic-sdk-dotnet</RepositoryUrl>
-		<Description>Anthropic Claude BPE Tokenizer unofficial implementation</Description>
+		<Description>Anthropic Client SDK unofficial implementation in dotnet</Description>
 		<Title>Anthropic Client SDK</Title>
 		<PackageProjectUrl>https://github.com/veerashayyagari/anthropic-sdk-dotnet</PackageProjectUrl>
-		<PackageLicenseExpression>Apache</PackageLicenseExpression>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
