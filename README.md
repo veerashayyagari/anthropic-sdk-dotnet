@@ -72,7 +72,7 @@ await using(AnthropicCompletion completion in completions)
 
 ### Advanced Usage
 
-- I want to control additional attributes like 'Temperature', 'TopP' and 'TopK' customize using 
+- I want to control additional attributes like 'Temperature', 'TopP' and 'TopK' => customize using 
 **AnthropicCreateStreamingCompletionParams** and **AnthropicCreateNonStreamingCompletionParams** for Streaming and non streaming completions respectively
 
 ```csharp
@@ -136,23 +136,23 @@ var completions = await client.GetStreamingCompletionsAsync(reqParams);
 ```
 
 - I want the raw http response that the anthropic api returned.
-    - Non streaming completions get httpresponsemessage use **GetRawCompletionsAsync**
+    - Non streaming completions get httpresponsemessage => use **GetRawCompletionsAsync**
     ```csharp
     using LLMSharp.Anthropic;
     HttpResponseMessage message = await client.GetRawCompletionsAsync(options);
     ```
-    - Streaming completions get httpresponsemessage use **GetRawStreamingCompletionsAsync**
+    - Streaming completions get httpresponsemessage => use **GetRawStreamingCompletionsAsync**
     ```csharp
     using LLMSharp.Anthropic;
     HttpResponseMessage message = await client.GetRawStreamingCompletionsAsync(options);
     ```
-    - Streaming completions get raw stream use **GetStreamingCompletionsAsStreamAsync**
+    - Streaming completions get raw stream => use **GetStreamingCompletionsAsStreamAsync**
     ```csharp
     using LLMSharp.Anthropic;
     Stream stream = await client.GetStreamingCompletionsAsStreamAsync(options);
     ```
 
-- I want more control when creating AnthropicClient, customize **ClientOptions**
+- I want more control when creating AnthropicClient => customize **ClientOptions**
 
 ```csharp
 using LLMSharp.Anthropic;
@@ -181,7 +181,7 @@ AnthropicClient client = new AnthropicClient(options);
 |      TimeOut              | 10 minutes (600000 ms)                 | The maximum amount of time (in milliseconds) that the client should wait for a response                  |
 |      MaxRetries           | 2                                      | The maximum number of times that the client will retry a request in case of a temporary failure, like a network error or a 5XX error from the server.                  |
 
-- I want to override 'MaxRetries' and 'Timeout' on a per request basis , instead of those configured using ClientOptions for the AnthropicClient. Use **AnthropicRequestOptions**
+- I want to override 'MaxRetries' and 'Timeout' on a per request basis , instead of those configured using ClientOptions for the AnthropicClient => Use **AnthropicRequestOptions**
 
 ```csharp
 using LLMSharp.Anthropic;
@@ -202,7 +202,7 @@ var completions = await client.GetStreamingCompletionsAsync(reqParams, reqOption
 
 ```
 
-- I want to override 'Anthropic Api Key' or 'Auth Token' on a per request basis. Use 'RequestHeaders' properties of **AnthropicRequestOptions** to override.
+- I want to override 'Anthropic Api Key' or 'Auth Token' on a per request basis => Use 'RequestHeaders' properties of **AnthropicRequestOptions** to override.
 
 ```csharp
 using LLMSharp.Anthropic;
@@ -247,3 +247,7 @@ AnthropicRequestOptions reqOptions = new AnthropicRequestOptions
 
 var completions = await client.GetStreamingCompletionsAsync(reqParams, reqOptions);
 ```
+
+## Contribute 🤝
+
+Got a pull request? Open it, and I'll review it as soon as possible.
