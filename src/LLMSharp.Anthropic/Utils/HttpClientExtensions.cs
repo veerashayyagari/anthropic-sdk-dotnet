@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.Collections.Generic;
+using System.Net.Http;
 using System.Net.Http.Headers;
 
 namespace LLMSharp.Anthropic.Utils
@@ -48,7 +49,7 @@ namespace LLMSharp.Anthropic.Utils
         /// <param name="client">httpclient to be configured</param>
         /// <param name="headers">custom headers to be used for overriding</param>
         /// <returns>httpclient configured with custom header overrides</returns>
-        internal static HttpClient OverrideDefaultHeaders(this HttpClient client, HttpHeaders? headers)
+        internal static HttpClient OverrideDefaultHeaders(this HttpClient client, IDictionary<string, IEnumerable<string>>? headers)
         {
             if(headers == null) return client;
 

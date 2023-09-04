@@ -1,4 +1,6 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Net.Http.Headers;
 
 namespace LLMSharp.Anthropic
 {
@@ -46,7 +48,7 @@ namespace LLMSharp.Anthropic
         /// These can be removed in individual requests by explicitly setting the
         /// header to 'null' in RequestOptions.
         /// </summary>
-        public HttpHeaders? DefaultHeaders { get; set; }
+        public IDictionary<string, IEnumerable<string>>? DefaultHeaders { get; set; }
 
         /// <summary>
         /// Authentication Bearer Token
