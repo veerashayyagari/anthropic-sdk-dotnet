@@ -1,5 +1,4 @@
 using LLMSharp.Anthropic.Models;
-using System.Net.Http.Headers;
 using System.Text;
 
 namespace LLMSharp.Anthropic.Tests
@@ -114,6 +113,62 @@ namespace LLMSharp.Anthropic.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task When_Used_With_Empty_Prompt_NonStreaming_Call_Should_Fail()
+        {
+            AnthropicCreateNonStreamingCompletionParams input = new();
+            input.Prompt = string.Empty;
+
+            AnthropicRequestOptions options = new AnthropicRequestOptions
+            {
+                MaxRetries = 0,
+            };
+            var completionResponse = await this._client.GetRawCompletionsAsync(input, options);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task When_Used_With_Invalid_Temperature_NonStreaming_Call_Should_Fail()
+        {
+            AnthropicCreateNonStreamingCompletionParams input = new();
+            input.Temperature = 2;
+
+            AnthropicRequestOptions options = new AnthropicRequestOptions
+            {
+                MaxRetries = 0,
+            };
+            var completionResponse = await this._client.GetRawCompletionsAsync(input, options);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task When_Used_With_Invalid_TopP_NonStreaming_Call_Should_Fail()
+        {
+            AnthropicCreateNonStreamingCompletionParams input = new();
+            input.TopP = 2;
+
+            AnthropicRequestOptions options = new AnthropicRequestOptions
+            {
+                MaxRetries = 0,
+            };
+            var completionResponse = await this._client.GetRawCompletionsAsync(input, options);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(TaskCanceledException))]
+        public async Task When_Used_With_VeryShort_Timeout_NonStreaming_Call_Should_Fail()
+        {
+            AnthropicCreateNonStreamingCompletionParams input = new();            
+
+            AnthropicRequestOptions options = new AnthropicRequestOptions
+            {
+                MaxRetries = 0,
+                Timeout = 5 // 5 ms
+            };
+            var completionResponse = await this._client.GetRawCompletionsAsync(input, options);
+        }
+
+        [TestMethod]
         public async Task When_Used_With_Default_Params_Streaming_Call_Should_Succeed()
         {
             AnthropicCreateStreamingCompletionParams input = new();
@@ -147,12 +202,72 @@ namespace LLMSharp.Anthropic.Tests
         }
 
         [TestMethod]
-        public async Task When_Used_With_Default_Params_RawHttpResponseStream_Call_Should_Succeed()
+        public async Task When_Used_With_Request_Specific_WrongApiKey_Streaming_Call_Should_Fail()
         {
             AnthropicCreateStreamingCompletionParams input = new();
+
+            AnthropicRequestOptions options = new AnthropicRequestOptions
+            {
+                MaxRetries = 0,
+                RequestHeaders = new Dictionary<string, IEnumerable<string>>
+                {
+                    {"X-Api-Key", new string[]{"some random value"} }
+                }
+            };
+            var completionResponse = await this._client.GetRawStreamingCompletionsAsync(input, options);
+            Assert.IsNotNull(completionResponse);
+            Assert.IsTrue(completionResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized);
+        }
+
+        [TestMethod]
+        public async Task When_Used_With_Default_Params_RawHttpResponseStream_Call_Should_Succeed()
+        {
+            AnthropicCreateStreamingCompletionParams input = new();            
             var completionStream = await this._client.GetRawStreamingCompletionsAsync(input);
             Assert.IsNotNull(completionStream);
             Assert.IsTrue(completionStream.IsSuccessStatusCode);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task When_Used_With_Empty_Prompt_Streaming_Call_Should_Fail()
+        {
+            AnthropicCreateStreamingCompletionParams input = new();
+            input.Prompt = string.Empty;
+
+            AnthropicRequestOptions options = new AnthropicRequestOptions
+            {
+                MaxRetries = 0,                
+            };
+            var completionResponse = await this._client.GetRawStreamingCompletionsAsync(input, options);            
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task When_Used_With_Invalid_Temperature_Streaming_Call_Should_Fail()
+        {
+            AnthropicCreateStreamingCompletionParams input = new();
+            input.Temperature = 2;
+
+            AnthropicRequestOptions options = new AnthropicRequestOptions
+            {
+                MaxRetries = 0,
+            };
+            var completionResponse = await this._client.GetRawStreamingCompletionsAsync(input, options);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task When_Used_With_Invalid_TopP_Streaming_Call_Should_Fail()
+        {
+            AnthropicCreateStreamingCompletionParams input = new();
+            input.TopP = 2;
+
+            AnthropicRequestOptions options = new AnthropicRequestOptions
+            {
+                MaxRetries = 0,
+            };
+            var completionResponse = await this._client.GetRawStreamingCompletionsAsync(input, options);
         }
     }
 }

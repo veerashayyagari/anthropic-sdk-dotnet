@@ -7,11 +7,21 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace LLMSharp.Anthropic.Utils
 {
     internal static class Extensions
     {
+        private static readonly Action<ILogger<AnthropicClient>, string, Exception?> _logInfo = 
+            LoggerMessage.Define<string>(LogLevel.Information, new EventId(100000, "llmsharp-anthropic-sdk-info"), "{Message}");
+
+        private static readonly Action<ILogger<AnthropicClient>, string, Exception?> _logWarning = 
+            LoggerMessage.Define<string>(LogLevel.Warning, new EventId(200000, "llmsharp-anthropic-sdk-warning"), "{Message}");
+
+        private static readonly Action<ILogger<AnthropicClient>, string, Exception?> _logError = 
+            LoggerMessage.Define<string>(LogLevel.Error, new EventId(300000, "llmsharp-anthropic-sdk-error"), "{Message}");
+
         /// <summary>
         /// Json serializes a given class and converts it to UTF-8 encoded stringcontent to be used in HttpMessage
         /// </summary>
@@ -83,6 +93,39 @@ namespace LLMSharp.Anthropic.Utils
             }
 
             throw new AnthropicClientException(response.StatusCode, response.Headers, responseBody);
+        }
+
+        /// <summary>
+        /// Log info using LoggerMessage.Define based high performance logging
+        /// </summary>
+        /// <param name="logger">AnthropicClient logger instance</param>
+        /// <param name="message">message to log</param>
+
+        internal static void Info(this ILogger<AnthropicClient> logger, string message)
+        {
+            _logInfo(logger, message, null);
+        }
+
+        /// <summary>
+        /// Log warning using LoggerMessage.Define based high performance logging
+        /// </summary>
+        /// <param name="logger">AnthropicClient logger instance</param>
+        /// <param name="message">message to log</param>
+        /// <param name="ex">Exception to log</param>
+        internal static void Warn(this ILogger<AnthropicClient> logger, string message, Exception? ex)
+        {
+            _logWarning(logger, message, ex);
+        }
+
+        /// <summary>
+        /// Log error using LoggerMessage.Define based high performance logging
+        /// </summary>
+        /// <param name="logger">AnthropicClient logger instance</param>
+        /// <param name="message">message to log</param>
+        /// <param name="ex">Exception to log</param>
+        internal static void Error(this ILogger<AnthropicClient> logger, string message, Exception ex)
+        {
+            _logError(logger, message, ex);
         }
     }
 }

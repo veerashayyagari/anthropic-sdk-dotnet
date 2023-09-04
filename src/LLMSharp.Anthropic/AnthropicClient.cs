@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 
 namespace LLMSharp.Anthropic
 {
-#pragma warning disable CA1848 // Use the LoggerMessage delegates
     /// <summary>
     /// Anthropic Completions Rest API client implementation
     /// </summary>
@@ -47,7 +46,12 @@ namespace LLMSharp.Anthropic
             this._httpClient = BuildClientFromOptions(options);
             this._defaultRetryPolicy = HttpPolicyExtensions
                 .HandleTransientHttpError()
-                .WaitAndRetryAsync(options.MaxRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+                .WaitAndRetryAsync(options.MaxRetries, retryAttempt =>
+                {
+                    this._logger.Warn($"Retrying: ${retryAttempt}", null);
+                    return TimeSpan.FromSeconds(Math.Pow(2, retryAttempt));
+                });
+            this._logger.Info("Successfully set up Anthropic HttpClient instance");
         }
 
         /// <summary>
@@ -63,7 +67,7 @@ namespace LLMSharp.Anthropic
             AnthropicRequestOptions? requestOptions = null,
             CancellationToken cancellationToken = default)
         {
-            var response = await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);            
+            var response = await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -162,12 +166,23 @@ namespace LLMSharp.Anthropic
         {
             ValidateCompletionParams(requestParams);
 
+            this._logger.Info("Validating Completion Parameters successful");
+
+            if (string.IsNullOrEmpty(requestParams.Metadata?.UserId))
+            {
+                requestParams.Metadata = new AnthropicCreateCompletionMetadata { UserId = Guid.NewGuid().ToString() };
+            }
+
             IAsyncPolicy<HttpResponseMessage> retryPolicy = _defaultRetryPolicy;
             if (requestOptions?.MaxRetries.HasValue == true)
             {
                 retryPolicy = HttpPolicyExtensions
                     .HandleTransientHttpError()
-                    .WaitAndRetryAsync(requestOptions.MaxRetries.Value, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+                    .WaitAndRetryAsync(requestOptions.MaxRetries.Value, retryAttempt =>
+                    {
+                        this._logger.Warn($"Retrying: ${retryAttempt}", null);
+                        return TimeSpan.FromSeconds(Math.Pow(2, retryAttempt));
+                    });
             }
 
             CancellationToken requestCancellationToken = cancellationToken;
@@ -177,13 +192,13 @@ namespace LLMSharp.Anthropic
                 cts.CancelAfter(requestOptions.Timeout.Value);
                 requestCancellationToken = cts.Token;
             }
-
+            
             HttpRequestMessage message = new() { Content = requestParams.ToStringContent(), Method = HttpMethod.Post, RequestUri = new Uri(Constants.COMPLETIONS_ENDPOINT, UriKind.Relative) };
-            if(Http2SupportAvailable())
+            if (IsHttp2SupportAvailable())
             {
-                _logger.LogInformation("Upgrading http request to use http/2.");
+                _logger.Info("Upgrading http request to use http/2.");
                 message.Version = new Version(2, 0);
-            }            
+            }
 
             if (requestOptions?.RequestHeaders != null)
             {
@@ -198,11 +213,12 @@ namespace LLMSharp.Anthropic
                 }
             }
 
+            this._logger.Info($"Making Request to Anthropic API endpoint. Request will timeout after {requestOptions?.Timeout ?? _httpClient.Timeout.Milliseconds} milliseconds");
             var response = await retryPolicy.ExecuteAsync(
                 () => (requestParams is AnthropicCreateNonStreamingCompletionParams) ?
                 _httpClient.SendAsync(message, requestCancellationToken) :
                 _httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, requestCancellationToken))
-            .ConfigureAwait(false);
+            .ConfigureAwait(false);            
             return response;
         }
 
@@ -214,7 +230,7 @@ namespace LLMSharp.Anthropic
         /// <exception cref="ArgumentException">Gets thrown if prompt is empty/null, temperature and/or topP are not with in the valid range</exception>
         private static void ValidateCompletionParams(AnthropicCreateCompletionBaseParams completionParams)
         {
-            if(completionParams == null)
+            if (completionParams == null)
             {
                 throw new ArgumentNullException(nameof(completionParams));
             }
@@ -244,7 +260,7 @@ namespace LLMSharp.Anthropic
         /// <exception cref="ArgumentException">Gets thrown if either BaseUrl is null/invalid or both ApiKey and AuthToken values are present</exception>
         private static HttpClient BuildClientFromOptions(ClientOptions options)
         {
-            if(options == null)
+            if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -264,8 +280,8 @@ namespace LLMSharp.Anthropic
                 var client = new HttpClient
                 {
                     BaseAddress = baseUri,
-                    Timeout = TimeSpan.FromMilliseconds(options.Timeout),                    
-                };                
+                    Timeout = TimeSpan.FromMilliseconds(options.Timeout),
+                };
 
                 return client
                     .AddDefaultHeaders()
@@ -276,8 +292,13 @@ namespace LLMSharp.Anthropic
             throw new ArgumentException($"{options.BaseUrl}: is not a valid Uri");
         }
 
-        private static bool Http2SupportAvailable()
+        /// <summary>
+        /// Checks whether the current runtime framework supports http/2 with the built in httpclient
+        /// </summary>
+        /// <returns>true if the runtime framework is .net core 3 and above or .net 5 and above</returns>
+        private bool IsHttp2SupportAvailable()
         {
+            _logger.Info($"Current Runtime Framework: {RuntimeInformation.FrameworkDescription}");
             if (RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.InvariantCultureIgnoreCase)) return false;
             if (RuntimeInformation.FrameworkDescription.StartsWith(".NET Native", StringComparison.InvariantCultureIgnoreCase)) return false;
             if (RuntimeInformation.FrameworkDescription.StartsWith(".NET Core", StringComparison.InvariantCultureIgnoreCase))
@@ -290,6 +311,4 @@ namespace LLMSharp.Anthropic
             return true;
         }
     }
-
-#pragma warning restore CA1848 // Use the LoggerMessage delegates
 }
