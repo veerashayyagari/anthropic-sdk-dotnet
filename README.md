@@ -1,5 +1,9 @@
 # anthropic-sdk-dotnet
 C# Client SDK (Unofficial) for [Anthropic Large Language Models](https://www.anthropic.com/)
+- Inspired by the official Anthropic Python SDK.
+- Goal is to provide the efficient and flexible SDK for dotnet developers to build LLM Apps using Anthropic
+- NUGET package is built using .NET standard 2.0 to support integrations with any code built using .NET Framework, .NET Core and/or .NET >= 5
+- SDK uses http/2 for calling Anthropic API endpoints when the client code targets .NET Core 3.0/3.1 or .NET >= 5, for other frameworks the SDK falls back to using http/1.1 (due to limitation with httpclient.)
 
 ## Install
 
