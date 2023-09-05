@@ -31,15 +31,15 @@ jobs:
         run: |
           echo "VERSION:$VERSION"
           echo "PREFIX:$PREFIX"
-      - name: Build Tokenizers
+      - name: Build Anthropic SDK
         run: dotnet build ./src/LLMSharp.Anthropic/LLMSharp.Anthropic.csproj --configuration Release
       - name: Test
         run: dotnet test ./tests/LLMSharp.Anthropic.Tests/LLMSharp.Anthropic.Tests.csproj --configuration Release
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      - name: Pack Anthropic Sdk        
+      - name: Pack Anthropic SDK        
         run: dotnet pack ./src/LLMSharp.Anthropic/LLMSharp.Anthropic.csproj --configuration Release --output . -p:Version=${VERSION}      
-    #   - name: Push
-    #     run: dotnet nuget push LLMSharp.Anthropic.${VERSION}.nupkg --source 'https://api.nuget.org/v3/index.json' --api-key ${NUGET_API_KEY}
-    #     env:
-    #       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      - name: Publish Nuget Package
+        run: dotnet nuget push LLMSharp.Anthropic.${VERSION}.nupkg --source 'https://api.nuget.org/v3/index.json' --api-key ${NUGET_API_KEY}
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
