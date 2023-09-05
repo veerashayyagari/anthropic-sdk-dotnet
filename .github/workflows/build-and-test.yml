@@ -4,13 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - "**.cs"
-      - "**.csproj"
+      - "./src/**"
+      - "./tests/**"
   pull_request:
     branches: [main]
     paths:
-      - "**.cs"
-      - "**.csproj"
+      - "./src/**"
+      - "./tests/**"
 
 env:
   DOTNET_VERSION: "7.0.304" # The .NET SDK version to use
