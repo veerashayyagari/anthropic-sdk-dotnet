@@ -287,7 +287,7 @@ namespace LLMSharp.Anthropic
                 }
             }
 
-            this._logger.Info($"Making Request to Anthropic API endpoint. Request will timeout after {requestOptions?.Timeout ?? _httpClient.Timeout.Milliseconds} milliseconds");
+            this._logger.Info($"Making Request to Anthropic API endpoint. Request will timeout after {requestOptions?.Timeout ?? _httpClient.Timeout.TotalMilliseconds} milliseconds");
             var response = await retryPolicy.ExecuteAsync(
                 () => (requestParams is AnthropicCreateNonStreamingCompletionParams) ?
                 _httpClient.SendAsync(message, requestCancellationToken) :
