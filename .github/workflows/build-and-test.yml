@@ -11,9 +11,9 @@ on:
   pull_request:
     branches:
       - main
-      paths:
-        - "src/**"
-        - "tests/**"
+    paths:
+      - "src/**"
+      - "tests/**"
 
 env:
   DOTNET_VERSION: "7.0.304" # The .NET SDK version to use
