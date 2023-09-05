@@ -50,6 +50,18 @@ namespace LLMSharp.Anthropic.Tests
             Assert.IsTrue(string.IsNullOrEmpty(completion.Completion) == false);
         }
 
+        [TestMethod]
+        public async Task When_Used_With_Default_Params_NonStreaming_Call_WithUsage_Should_Succeed()
+        {
+            AnthropicCreateNonStreamingCompletionParams input = new();
+            var completion = await this._client.GetCompletionsWithUsageInfoAsync(input);
+            Assert.IsNotNull(completion);
+            Assert.IsTrue(string.IsNullOrEmpty(completion.Completion) == false);
+            Assert.IsNotNull(completion.UsageInfo);
+            Assert.IsTrue(completion.UsageInfo.PromptTokens > 0);
+            Assert.IsTrue(completion.UsageInfo.CompletionTokens > 0);
+        }
+
         [TestMethod]        
         public async Task When_Used_With_Request_Specific_WrongApiKey_NonStreaming_Call_Should_Throw()
         {
@@ -268,6 +280,31 @@ namespace LLMSharp.Anthropic.Tests
                 MaxRetries = 0,
             };
             var completionResponse = await this._client.GetRawStreamingCompletionsAsync(input, options);
+        }
+
+        [TestMethod]
+        public async Task When_Used_With_Default_Params_Streaming_WithUsage_Call_Should_Succeed()
+        {
+            AnthropicCreateStreamingCompletionParams input = new();
+            var completionStream = this._client.GetStreamingCompletionsWithUsageInfoAsync(input);
+            Assert.IsNotNull(completionStream);
+            StringBuilder chatCompletion = new StringBuilder();
+            int promptTokens = 0;
+            int completionTokens = 0;
+            await foreach (var completion in completionStream)
+            {
+                chatCompletion.Append(completion?.Completion);
+                if(promptTokens == 0)
+                {
+                    promptTokens = completion?.UsageInfo?.PromptTokens ?? 0;
+                }
+
+                completionTokens += completion?.UsageInfo?.CompletionTokens ?? 0;
+            }
+
+            Assert.IsTrue(chatCompletion.Length > 0);
+            Assert.IsTrue(promptTokens > 0);
+            Assert.IsTrue(completionTokens > 0);
         }
     }
 }

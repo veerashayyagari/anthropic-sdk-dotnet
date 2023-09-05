@@ -26,6 +26,19 @@ namespace LLMSharp.Anthropic
             CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Get non-streaming AnthropicCompletion object including token usage from Anthropic Completions API
+        /// </summary>
+        /// <param name="requestParams" cref="AnthropicCreateNonStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
+        /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        /// <returns>AnthropicCompletion object with prompt response</returns>
+        /// <exception cref="AnthropicClientException">Gets thrown on non success response code.</exception>
+        Task<AnthropicCompletion?> GetCompletionsWithUsageInfoAsync(
+            AnthropicCreateNonStreamingCompletionParams requestParams,
+            AnthropicRequestOptions? requestOptions = null,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Get non-streaming raw httpresponse from Anthropic Completions API
         /// </summary>
         /// <param name="requestParams" cref="AnthropicCreateNonStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
@@ -48,6 +61,19 @@ namespace LLMSharp.Anthropic
         Task<IAsyncEnumerable<AnthropicCompletion?>> GetStreamingCompletionsAsync(
             AnthropicCreateStreamingCompletionParams requestParams,
             AnthropicRequestOptions? requestOptions,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get Streaming AnthropicCompletion object with token usage info from Anthropic Completions API        
+        /// </summary>
+        /// <param name="requestParams" cref="AnthropicCreateStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
+        /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        /// <returns>Stream of AnthropicCompletion objects</returns>
+        /// <exception cref="AnthropicClientException">Gets thrown on non success response code.</exception>
+        IAsyncEnumerable<AnthropicCompletion?> GetStreamingCompletionsWithUsageInfoAsync(
+            AnthropicCreateStreamingCompletionParams requestParams,
+            AnthropicRequestOptions? requestOptions = null,
             CancellationToken cancellationToken = default);
 
         /// <summary>

@@ -37,5 +37,10 @@ namespace LLMSharp.Anthropic.Models
         /// </summary>
         [JsonPropertyName("stop")]
         public string? Stop { get; set; }
+
+        /// <summary>
+        /// Anthropic Token usage info : Prompt tokens, Response tokens, total tokens
+        /// </summary>
+        public AnthropicTokenUsage? UsageInfo { get; set; }
     }
 }

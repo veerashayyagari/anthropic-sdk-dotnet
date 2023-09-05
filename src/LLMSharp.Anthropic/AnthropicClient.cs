@@ -1,4 +1,5 @@
 ﻿using LLMSharp.Anthropic.Models;
+using LLMSharp.Anthropic.Tokenizer;
 using LLMSharp.Anthropic.Utils;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -7,7 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,6 +82,41 @@ namespace LLMSharp.Anthropic
         }
 
         /// <summary>
+        /// Get non-streaming AnthropicCompletion object including token usage from Anthropic Completions API
+        /// </summary>
+        /// <param name="requestParams" cref="AnthropicCreateNonStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
+        /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        /// <returns>AnthropicCompletion object with prompt response</returns>
+        /// <exception cref="AnthropicClientException">Gets thrown on non success response code.</exception>
+        public async Task<AnthropicCompletion?> GetCompletionsWithUsageInfoAsync(
+            AnthropicCreateNonStreamingCompletionParams requestParams,
+            AnthropicRequestOptions? requestOptions = null,
+            CancellationToken cancellationToken = default)
+        {
+            var response = await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await response.ProcessAsAnthropicClientException();
+            }
+
+            var claudeTokenizer = new ClaudeTokenizer();
+            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var completion = JsonSerializer.Deserialize<AnthropicCompletion>(responseBody);
+            if (completion != null)
+            {
+                completion.UsageInfo = new AnthropicTokenUsage
+                {
+                    PromptTokens = claudeTokenizer.CountTokens(requestParams.Prompt),
+                    CompletionTokens = claudeTokenizer.CountTokens(completion?.Completion),
+                };
+            }
+
+            return completion;
+        }
+
+        /// <summary>
         /// Get non-streaming raw httpresponse from Anthropic Completions API
         /// </summary>
         /// <param name="requestParams" cref="AnthropicCreateNonStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
@@ -114,6 +152,42 @@ namespace LLMSharp.Anthropic
 
             Stream contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             return contentStream.ReadCompletionsFromSseStream();
+        }
+
+        /// <summary>
+        /// Get Streaming AnthropicCompletion object with token usage info from Anthropic Completions API
+        /// </summary>
+        /// <param name="requestParams" cref="AnthropicCreateStreamingCompletionParams">Input parameters like prompt, temperature for generating completions</param>
+        /// <param name="requestOptions" cref="AnthropicRequestOptions">Request specific overrides for ClientOptions</param>
+        /// <param name="cancellationToken">Request cancellation token</param>
+        /// <returns>Stream of AnthropicCompletion objects</returns>
+        /// <exception cref="AnthropicClientException">Gets thrown on non success response code.</exception>
+        public async IAsyncEnumerable<AnthropicCompletion?> GetStreamingCompletionsWithUsageInfoAsync(
+            AnthropicCreateStreamingCompletionParams requestParams,
+            AnthropicRequestOptions? requestOptions = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var response = await this.GetRawChatCompletionsResponse(requestParams, requestOptions, cancellationToken).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                await response.ProcessAsAnthropicClientException();
+            }
+
+            Stream contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            var completions = contentStream.ReadCompletionsFromSseStream();
+            var claudeTokenizer = new ClaudeTokenizer();
+            int promptTokens = claudeTokenizer.CountTokens(requestParams.Prompt);
+            await foreach (var completion in completions)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!string.IsNullOrEmpty(completion?.Completion))
+                {
+                    int completionTokens = claudeTokenizer.CountTokens(completion!.Completion);
+                    completion.UsageInfo = new AnthropicTokenUsage { PromptTokens = promptTokens, CompletionTokens = completionTokens };
+                }
+
+                yield return completion;
+            }
         }
 
         /// <summary>
@@ -192,7 +266,7 @@ namespace LLMSharp.Anthropic
                 cts.CancelAfter(requestOptions.Timeout.Value);
                 requestCancellationToken = cts.Token;
             }
-            
+
             HttpRequestMessage message = new() { Content = requestParams.ToStringContent(), Method = HttpMethod.Post, RequestUri = new Uri(Constants.COMPLETIONS_ENDPOINT, UriKind.Relative) };
             if (IsHttp2SupportAvailable())
             {
@@ -218,7 +292,7 @@ namespace LLMSharp.Anthropic
                 () => (requestParams is AnthropicCreateNonStreamingCompletionParams) ?
                 _httpClient.SendAsync(message, requestCancellationToken) :
                 _httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, requestCancellationToken))
-            .ConfigureAwait(false);            
+            .ConfigureAwait(false);
             return response;
         }
 
