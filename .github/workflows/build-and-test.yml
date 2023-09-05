@@ -38,3 +38,5 @@ jobs:
 
       - name: Test
         run: dotnet test ./tests/LLMSharp.Anthropic.Tests/LLMSharp.Anthropic.Tests.csproj --no-restore --verbosity normal
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
