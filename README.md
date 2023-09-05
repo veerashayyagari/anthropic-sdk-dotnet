@@ -1,4 +1,4 @@
-# anthropic-sdk-dotnet
+# anthropic-sdk-dotnet [![Build and Test Solution](https://github.com/veerashayyagari/anthropic-sdk-dotnet/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/veerashayyagari/anthropic-sdk-dotnet/actions/workflows/build-and-test.yml)[![Publish Nugets](https://github.com/veerashayyagari/anthropic-sdk-dotnet/actions/workflows/publish-nugets.yml/badge.svg)](https://github.com/veerashayyagari/anthropic-sdk-dotnet/actions/workflows/publish-nugets.yml)
 C# Client SDK (Unofficial) for [Anthropic Large Language Models](https://www.anthropic.com/)
 - Inspired by the [official Anthropic Python SDK](https://github.com/anthropics/anthropic-sdk-python).
 - Goal is to provide the efficient and flexible SDK for dotnet developers building LLM Apps using Anthropic
