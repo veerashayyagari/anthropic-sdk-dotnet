@@ -1,5 +1,8 @@
 ﻿namespace LLMSharp.Anthropic
 {
+    /// <summary>
+    /// AnthropicClient SDK constants    
+    /// </summary>
     public class Constants
     {
 #pragma warning disable CA1707 // Identifiers should not contain underscores

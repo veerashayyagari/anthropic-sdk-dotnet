@@ -1,7 +1,7 @@
 name: "Publish Nugets"
 
 on:
-  push:
+  push:    
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"      
 jobs:
@@ -32,12 +32,14 @@ jobs:
           echo "VERSION:$VERSION"
           echo "PREFIX:$PREFIX"
       - name: Build Tokenizers
-        run: dotnet build --configuration Release
+        run: dotnet build ./src/LLMSharp.Anthropic/LLMSharp.Anthropic.csproj --configuration Release
       - name: Test
-        run: dotnet test --configuration Release --no-build
+        run: dotnet test ./tests/LLMSharp.Anthropic.Tests/LLMSharp.Anthropic.Tests.csproj --configuration Release
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       - name: Pack Anthropic Sdk        
         run: dotnet pack ./src/LLMSharp.Anthropic/LLMSharp.Anthropic.csproj --configuration Release --output . -p:Version=${VERSION}      
     #   - name: Push
-    #     run: dotnet nuget push LLMSharp.*.Tokenizer.${VERSION}.nupkg --source 'https://api.nuget.org/v3/index.json' --api-key ${NUGET_API_KEY}
+    #     run: dotnet nuget push LLMSharp.Anthropic.${VERSION}.nupkg --source 'https://api.nuget.org/v3/index.json' --api-key ${NUGET_API_KEY}
     #     env:
     #       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
