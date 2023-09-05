@@ -3,8 +3,7 @@ name: Build and Test Solution
 on:
   push:
     branches:
-      - main
-      - workflow
+      - main      
     paths:
       - "src/**"
       - "tests/**"
