@@ -75,11 +75,13 @@ await using(AnthropicCompletion completion in completions)
 #### AnthropicClient Methods :
 
 - **GetCompletionsAsync** : Get non streaming completions, returns an AnthropicCompletion object.
-- **GetRawCompletionsAsync** : Get non stream completions as raw httpresponse message.    
+- **GetRawCompletionsAsync** : Get non stream completions as raw httpresponse message.   
+- **GetCompletionsWithUsageInfoAsync** : Get non streaming completions with token usage info (prompt tokens , completion tokens), returns an AnthropicCompletion object with usage info. 
 
 - **GetStreamingCompletionsAsync** : Get streaming completions, returns an IAsyncEnumerable stream of AnthropicCompletion objects.
 - **GetStreamingCompletionsAsStreamAsync** : Get streaming completions as a raw stream, returns a SSE stream.
 - **GetRawStreamingCompletionsAsync** : Get streaming completions raw httpresponse message.
+- **GetStreamingCompletionsWithUsageInfoAsync** : Get streaming completions with token usage info (prompt tokens , completion tokens), returns an AnthropicCompletion object with usage info. 
 
 #### Input models :
 - **AnthropicCreateNonStreamingCompletionParams** : is used for passing input parameters for non streaming completion methods.
