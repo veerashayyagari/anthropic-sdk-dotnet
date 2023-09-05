@@ -16,6 +16,7 @@
 		<PackageProjectUrl>https://github.com/veerashayyagari/anthropic-sdk-dotnet</PackageProjectUrl>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>anthropic.png</PackageIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -32,6 +33,10 @@
 
 	<ItemGroup>
 		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\anthropic.png">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
