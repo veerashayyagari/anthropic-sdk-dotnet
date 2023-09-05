@@ -2,15 +2,18 @@ name: Build and Test Solution
 
 on:
   push:
-    branches: [workflow]
+    branches:
+      - main
+      - workflow
     paths:
-      - "./src/**"
-      - "./tests/**"
+      - "src/**"
+      - "tests/**"
   pull_request:
-    branches: [main]
-    paths:
-      - "./src/**"
-      - "./tests/**"
+    branches:
+      - main
+      paths:
+        - "src/**"
+        - "tests/**"
 
 env:
   DOTNET_VERSION: "7.0.304" # The .NET SDK version to use
