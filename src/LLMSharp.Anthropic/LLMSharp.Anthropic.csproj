@@ -11,7 +11,7 @@
 		<Company>veerash-ayyagari</Company>
 		<PackageTags>anthropic, anthropic client, claude, dotnet, anthropic sdk</PackageTags>
 		<RepositoryUrl>https://github.com/veerashayyagari/anthropic-sdk-dotnet</RepositoryUrl>
-		<Description>Anthropic Client SDK unofficial implementation in dotnet</Description>
+		<Description>Anthropic Client SDK (unofficial). Includes completions, streaming completions, raw response, tokenusage, http/2 support and more.</Description>
 		<Title>Anthropic Client SDK</Title>
 		<PackageProjectUrl>https://github.com/veerashayyagari/anthropic-sdk-dotnet</PackageProjectUrl>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
