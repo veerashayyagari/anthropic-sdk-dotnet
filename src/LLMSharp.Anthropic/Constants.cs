@@ -1,8 +1,7 @@
 ﻿namespace LLMSharp.Anthropic
 {
     /// <summary>
-    /// AnthropicClient SDK constants
-    /// Test Push Workflow trigger
+    /// AnthropicClient SDK constants    
     /// </summary>
     public class Constants
     {
