@@ -14,7 +14,7 @@
 		<Description>Anthropic Client SDK unofficial implementation in dotnet</Description>
 		<Title>Anthropic Client SDK</Title>
 		<PackageProjectUrl>https://github.com/veerashayyagari/anthropic-sdk-dotnet</PackageProjectUrl>
-		<PackageLicenseExpression>Apache 2.0</PackageLicenseExpression>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
