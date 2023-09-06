@@ -24,14 +24,13 @@ namespace LLMSharp.Anthropic.Models
         /// As Anthropic improve Claude, we develop new versions of it that you can query.
         /// This parameter controls which version of Claude answers your request.
         /// Right now anthropic is offering two model families: Claude, and Claude Instant.
-        /// You can use them by setting `model` to `"claude2"` or `"claudeinstant1"`, respectively.
+        /// You can use them by setting `model` to `"claude-2"` or `"claude-instant-1"`, respectively.
         ///
         /// Default : Claude2
         /// See [models] (https://docs.anthropic.com/claude/reference/selecting-a-model) for additional details.
         /// </summary>
-        [JsonPropertyName("model")]
-        [JsonConverter(typeof(LanguageModelJsonConverter))]
-        public AnthropicLanguageModel Model { get; set; } = AnthropicLanguageModel.Claude2;
+        [JsonPropertyName("model")]        
+        public string Model { get; set; } = "claude-2";
 
         /// <summary>
         /// The prompt that you want Claude to complete.
