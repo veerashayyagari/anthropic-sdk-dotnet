@@ -17,6 +17,9 @@
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIcon>anthropic.png</PackageIcon>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>C:\r\anthropic-sdk-dotnet\anthropic-sdk-dotnet.snk</AssemblyOriginatorKeyFile>
+		<DelaySign>True</DelaySign>
 	</PropertyGroup>
 
 	<ItemGroup>
