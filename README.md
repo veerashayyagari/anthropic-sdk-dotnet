@@ -100,8 +100,8 @@ await using(AnthropicCompletion completion in completions)
 **AnthropicCreateStreamingCompletionParams** and **AnthropicCreateNonStreamingCompletionParams** for Streaming and non streaming completions respectively
 
 ```csharp
-var userQuestion = r"Why is the sky blue?";
-var prompt = $"\n\nHuman: {userQuestion}\n\nAssistant:";
+var userQuestion = "Why is the sky blue?";
+var prompt = $"{Constants.HUMAN_PROMPT}{userQuestion}{Constants.AI_PROMPT}";
 
 AnthropicCreateStreamingCompletionParams reqParams = 
     new AnthropicCreateStreamingCompletionParams
@@ -113,10 +113,10 @@ AnthropicCreateStreamingCompletionParams reqParams =
         MaxTokens = 2048,
         /*
         * The model that will complete your prompt.
-        * Possible Options: Claude2 , ClaudeInstant1
-        * Default: Claude2
+        * Possible Options: claude-2 , claude-instant-1, your custom model name
+        * Default: "claude-2"
         */
-        Model = AnthropicLanguageModel.Claude2,
+        Model = "claude-2",
         /*
         * The prompt that you want Claude to complete.
         * Default : "\n\nHuman:Hello,Claude. \n\nAssistant:"
@@ -211,8 +211,8 @@ AnthropicClient client = new AnthropicClient(options);
 using LLMSharp.Anthropic;
 using LLMSharp.Anthropic.Models;
 
-var userQuestion = r"Why is the sky blue?";
-var prompt = $"\n\nHuman: {userQuestion}\n\nAssistant:";
+var userQuestion = "Why is the sky blue?";
+var prompt = $"{Constants.HUMAN_PROMPT}{userQuestion}{Constants.AI_PROMPT}";
 
 AnthropicCreateStreamingCompletionParams reqParams = new AnthropicCreateStreamingCompletionParams{Prompt = prompt};
 
@@ -232,8 +232,8 @@ var completions = await client.GetStreamingCompletionsAsync(reqParams, reqOption
 using LLMSharp.Anthropic;
 using LLMSharp.Anthropic.Models;
 
-var userQuestion = r"Why is the sky blue?";
-var prompt = $"\n\nHuman: {userQuestion}\n\nAssistant:";
+var userQuestion = "Why is the sky blue?";
+var prompt = $"{Constants.HUMAN_PROMPT}{userQuestion}{Constants.AI_PROMPT}";
 
 AnthropicCreateStreamingCompletionParams reqParams = new AnthropicCreateStreamingCompletionParams{Prompt = prompt};
 
@@ -255,8 +255,8 @@ Use 'Authorization' header if needs to override AuthToken
 using LLMSharp.Anthropic;
 using LLMSharp.Anthropic.Models;
 
-var userQuestion = r"Why is the sky blue?";
-var prompt = $"\n\nHuman: {userQuestion}\n\nAssistant:";
+var userQuestion = "Why is the sky blue?";
+var prompt = $"{Constants.HUMAN_PROMPT}{userQuestion}{Constants.AI_PROMPT}";
 
 AnthropicCreateStreamingCompletionParams reqParams = new AnthropicCreateStreamingCompletionParams{Prompt = prompt};
 

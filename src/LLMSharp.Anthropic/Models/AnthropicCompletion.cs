@@ -16,9 +16,8 @@ namespace LLMSharp.Anthropic.Models
 
         /// <summary>
         /// The model that performed the completion
-        /// </summary>
-        [JsonConverter(typeof(LanguageModelJsonConverter))]
-        public AnthropicLanguageModel Model { get; set; }
+        /// </summary>        
+        public string? Model { get; set; }
 
         /// <summary>
         /// The reason that we stopped sampling.
