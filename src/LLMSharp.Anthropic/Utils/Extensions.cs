@@ -22,6 +22,8 @@ namespace LLMSharp.Anthropic.Utils
         private static readonly Action<ILogger<AnthropicClient>, string, Exception?> _logError = 
             LoggerMessage.Define<string>(LogLevel.Error, new EventId(300000, "llmsharp-anthropic-sdk-error"), "{Message}");
 
+        private static readonly JsonSerializerOptions options = new() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+
         /// <summary>
         /// Json serializes a given class and converts it to UTF-8 encoded stringcontent to be used in HttpMessage
         /// </summary>
@@ -29,8 +31,7 @@ namespace LLMSharp.Anthropic.Utils
         /// <param name="val"></param>
         /// <returns></returns>
         internal static StringContent ToStringContent<T>(this T val) where T : class
-        {
-            JsonSerializerOptions options = new() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+        {            
             var jsonString = JsonSerializer.Serialize<T>(val, options);
             return new StringContent(jsonString, Encoding.UTF8, "application/json");
         }

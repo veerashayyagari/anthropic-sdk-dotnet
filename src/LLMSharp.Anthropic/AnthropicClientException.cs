@@ -11,26 +11,45 @@ namespace LLMSharp.Anthropic
     /// </summary>
     public class AnthropicClientException : Exception
     {
+        /// <summary>
+        /// Anthropic API HTTP status code
+        /// </summary>
         public HttpStatusCode? HttpStatusCode { get; private set; }
 
+        /// <summary>
+        /// Anthropic API HTTP headers
+        /// </summary>
         public HttpHeaders? Headers { get; private set; }    
         
+        /// <summary>
+        /// Anthropic API completion error
+        /// </summary>
         public AnthropicCompletionError? CompletionError { get; private set; }
 
-        public AnthropicClientException(string message, Exception? innerException = null) : base(message, innerException) { }
+        /// <summary>
+        /// Anthropic Client Exception Constructor
+        /// </summary>
+        /// <param name="message">exception message</param>
+        /// <param name="innerException">inner exception</param>
+        internal AnthropicClientException(string message, Exception? innerException = null) : base(message, innerException) { }
 
-        public AnthropicClientException(string message, params object[] args) :
+        /// <summary>
+        /// Anthropic Client Exception Constructor
+        /// </summary>
+        /// <param name="message">client exception message with format place holders</param>
+        /// <param name="args">arguments to format the string</param>
+        internal AnthropicClientException(string message, params object[] args) :
             base(string.Format(CultureInfo.CurrentCulture, message, args))
         { }
 
-        public AnthropicClientException(HttpStatusCode httpStatusCode, HttpHeaders? headers = null, string? message = null, params object[] args) :
+        internal AnthropicClientException(HttpStatusCode httpStatusCode, HttpHeaders? headers = null, string? message = null, params object[] args) :
             base(string.Format(CultureInfo.CurrentCulture, message ?? string.Empty, args))
         {
             HttpStatusCode = httpStatusCode;
             Headers = headers;
         }
 
-        public AnthropicClientException(HttpStatusCode httpStatusCode, HttpHeaders? headers = null, AnthropicCompletionError? completionError = null)
+        internal AnthropicClientException(HttpStatusCode httpStatusCode, HttpHeaders? headers = null, AnthropicCompletionError? completionError = null)
             : base(completionError?.Error?.ErrorMessage ?? string.Empty)
         {
             HttpStatusCode = httpStatusCode;
@@ -44,7 +63,7 @@ namespace LLMSharp.Anthropic
     /// </summary>
     public class AnthropicClientConnectionException: AnthropicClientException 
     {
-        public AnthropicClientConnectionException(Exception? exception = null, string? message = null) : base(message ?? "Connection error.", exception) { }
+        internal AnthropicClientConnectionException(Exception? exception = null, string? message = null) : base(message ?? "Connection error.", exception) { }
     }
 
     /// <summary>
@@ -52,6 +71,6 @@ namespace LLMSharp.Anthropic
     /// </summary>
     public class AnthropicClientConnectionTimeoutException : AnthropicClientConnectionException
     {
-        public AnthropicClientConnectionTimeoutException() : base(message: "Request timed out.") { }
+        internal AnthropicClientConnectionTimeoutException() : base(message: "Request timed out.") { }
     }
 }
