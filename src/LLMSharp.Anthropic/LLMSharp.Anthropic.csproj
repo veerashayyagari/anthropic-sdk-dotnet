@@ -20,10 +20,11 @@
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\..\anthropic-sdk-dotnet.snk</AssemblyOriginatorKeyFile>
 		<DelaySign>True</DelaySign>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="LLMSharp.Anthropic.Tokenizer" Version="2.0.1" />
+		<PackageReference Include="LLMSharp.Anthropic.Tokenizer" Version="2.0.3" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
 		<PackageReference Include="Nullable" Version="1.3.1">
